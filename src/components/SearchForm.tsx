@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -7,7 +6,7 @@ import { formatRegistration, isValidUKRegistration } from '@/lib/utils';
 import { useSettingsStore } from '@/store/settingsStore';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Settings as SettingsIcon, Search, XCircle } from 'lucide-react';
-import SettingsDialog from '@/components/Settings';
+import SettingsDialog from '@/components/SettingsDialog';
 
 interface SearchFormProps {
   onSearch: (registration: string, mileage?: number) => void;
