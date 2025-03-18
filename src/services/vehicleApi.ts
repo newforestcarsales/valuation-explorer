@@ -1,4 +1,3 @@
-
 // This is a service to interact with the Vehicle Search API
 
 interface VehicleValuationRequest {
@@ -28,62 +27,66 @@ export const fetchVehicleValuation = async ({
   apiKey
 }: VehicleValuationRequest): Promise<VehicleValuationResponse> => {
   try {
-    // Real API implementation
+    // Format registration to remove spaces for API call
+    const formattedReg = registration.replace(/\s+/g, '').toUpperCase();
+    
+    // Configure API endpoint
     const url = new URL('https://api.vehicle-search.co.uk/api/v1/valuation');
-    url.searchParams.append('registration', registration);
+    url.searchParams.append('registration', formattedReg);
     if (mileage) url.searchParams.append('mileage', mileage.toString());
     
-    console.log(`Fetching vehicle data for ${registration}...`);
+    console.log(`Fetching vehicle data for ${formattedReg}...`);
     
-    // Try to make the API call
-    try {
-      const response = await fetch(url.toString(), {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error(`API returned status ${response.status}`);
+    // Make the API call
+    const response = await fetch(url.toString(), {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
       }
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      const errorMessage = errorData.message || `API returned status ${response.status}`;
+      console.error('API error:', errorMessage);
       
-      const data = await response.json();
-      
-      console.log('Vehicle data received:', data);
-      
-      return {
-        success: true,
-        data: {
-          registration: data.registration,
-          make: data.make,
-          model: data.model,
-          year: data.year,
-          retailValue: data.valuations.retail,
-          tradeValue: data.valuations.trade,
-          privateValue: data.valuations.private,
-          mileage: data.mileage
-        }
-      };
-    } catch (fetchError) {
-      console.error('API fetch error:', fetchError);
-      // If we're in the Chrome extension context and get a network error,
-      // we'll fall back to the simulation for demo purposes
-      if (typeof window !== 'undefined' && window.chrome && 'storage' in window.chrome) {
-        console.log('Running in Chrome extension context, falling back to simulation');
-        return simulateVehicleValuation(registration, mileage);
-      } else {
-        throw fetchError;
-      }
+      throw new Error(errorMessage);
     }
+    
+    const data = await response.json();
+    
+    console.log('Vehicle data received:', data);
+    
+    return {
+      success: true,
+      data: {
+        registration: data.registration,
+        make: data.make,
+        model: data.model,
+        year: data.year,
+        retailValue: data.valuations.retail,
+        tradeValue: data.valuations.trade,
+        privateValue: data.valuations.private,
+        mileage: data.mileage
+      }
+    };
   } catch (error) {
     console.error('API error:', error);
     
-    // Return a proper error instead of falling back to simulation
+    // Only fall back to simulation in development or when the extension explicitly needs it
+    if (process.env.NODE_ENV === 'development' || 
+        (typeof window !== 'undefined' && window.chrome && 'storage' in window.chrome)) {
+      console.log('Falling back to simulation - for demo purposes only');
+      return simulateVehicleValuation(registration, mileage);
+    }
+    
+    // In production, return a proper error
     return {
       success: false,
-      error: 'Unable to connect to the vehicle valuation service. Please check your API key and internet connection.'
+      error: error instanceof Error 
+        ? error.message 
+        : 'Unable to connect to the vehicle valuation service. Please check your API key and internet connection.'
     };
   }
 };
@@ -211,4 +214,3 @@ export const simulateVehicleValuation = (
     }, 1500);
   });
 };
-
