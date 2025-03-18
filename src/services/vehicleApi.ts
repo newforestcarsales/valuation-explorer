@@ -28,12 +28,12 @@ export const fetchVehicleValuation = async ({
   apiKey
 }: VehicleValuationRequest): Promise<VehicleValuationResponse> => {
   try {
-    // NOTE: This is a mock implementation since the actual API endpoint details aren't provided
-    // In a real implementation, you would make an actual API call here
-    
+    // Real API implementation
     const url = new URL('https://api.vehicle-search.co.uk/api/v1/valuation');
     url.searchParams.append('registration', registration);
     if (mileage) url.searchParams.append('mileage', mileage.toString());
+    
+    console.log(`Fetching vehicle data for ${registration}...`);
     
     const response = await fetch(url.toString(), {
       method: 'GET',
@@ -43,15 +43,18 @@ export const fetchVehicleValuation = async ({
       }
     });
     
+    const data = await response.json();
+    
     if (!response.ok) {
-      const errorData = await response.json();
+      console.error('API error response:', data);
       return {
         success: false,
-        error: errorData.message || 'Failed to fetch vehicle data'
+        error: data.message || `Error ${response.status}: Failed to fetch vehicle data`
       };
     }
     
-    const data = await response.json();
+    console.log('Vehicle data received:', data);
+    
     return {
       success: true,
       data: {

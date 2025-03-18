@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,14 @@ interface ApiKeyPromptProps {
 }
 
 const ApiKeyPrompt: React.FC<ApiKeyPromptProps> = ({ onSubmit }) => {
-  const [apiKey, setApiKey] = useState('');
+  const [apiKey, setApiKey] = useState('tddgdGuv5O8ZOeTu'); // Pre-filled with your API key
+  
+  // Auto submit the API key when component loads
+  useEffect(() => {
+    if (apiKey) {
+      onSubmit(apiKey);
+    }
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

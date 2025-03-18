@@ -5,7 +5,7 @@ import ValuationResult from '@/components/ValuationResult';
 import LoadingValuation from '@/components/LoadingValuation';
 import ApiKeyPrompt from '@/components/ApiKeyPrompt';
 import ErrorMessage from '@/components/ErrorMessage';
-import { simulateVehicleValuation } from '@/services/vehicleApi';
+import { fetchVehicleValuation } from '@/services/vehicleApi';
 import { useSettingsStore } from '@/store/settingsStore';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -35,9 +35,12 @@ const Index = () => {
     setValuationData(null);
 
     try {
-      // Use simulateVehicleValuation for demonstration
-      // In a real extension, this would use fetchVehicleValuation with the actual API key
-      const result = await simulateVehicleValuation(registration, mileage);
+      // Use real API instead of simulation
+      const result = await fetchVehicleValuation({
+        registration,
+        mileage,
+        apiKey
+      });
 
       if (result.success && result.data) {
         setValuationData(result.data);
