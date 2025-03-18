@@ -70,7 +70,7 @@ export const fetchVehicleValuation = async ({
       console.error('API fetch error:', fetchError);
       // If we're in the Chrome extension context and get a network error,
       // we'll fall back to the simulation for demo purposes
-      if (typeof window !== 'undefined' && window.chrome?.runtime) {
+      if (typeof window !== 'undefined' && window.chrome && 'storage' in window.chrome) {
         console.log('Running in Chrome extension context, falling back to simulation');
         return simulateVehicleValuation(registration, mileage);
       } else {
@@ -105,19 +105,110 @@ export const simulateVehicleValuation = (
         return;
       }
       
-      resolve({
-        success: true,
-        data: {
-          registration: registration,
+      // Generate different vehicle data based on the registration input
+      const regLastDigit = registration.match(/\d/) ? parseInt(registration.match(/\d/)![0]) : 0;
+      
+      const vehicles = [
+        {
           make: 'BMW',
           model: '3 Series 320d M Sport',
           year: 2020,
           retailValue: 23750,
           tradeValue: 21250,
           privateValue: 22500,
-          mileage: mileage || 25000
+        },
+        {
+          make: 'Audi',
+          model: 'A4 2.0 TDI S Line',
+          year: 2019,
+          retailValue: 22450,
+          tradeValue: 19800,
+          privateValue: 21200,
+        },
+        {
+          make: 'Mercedes',
+          model: 'C-Class C220d AMG Line',
+          year: 2021,
+          retailValue: 28950,
+          tradeValue: 25500,
+          privateValue: 27200,
+        },
+        {
+          make: 'Volkswagen',
+          model: 'Golf GTI',
+          year: 2022,
+          retailValue: 30750,
+          tradeValue: 27800,
+          privateValue: 29300,
+        },
+        {
+          make: 'Ford',
+          model: 'Focus ST',
+          year: 2020,
+          retailValue: 19950,
+          tradeValue: 17500,
+          privateValue: 18800,
+        },
+        {
+          make: 'Toyota',
+          model: 'Corolla Hybrid Excel',
+          year: 2021,
+          retailValue: 24800,
+          tradeValue: 22100,
+          privateValue: 23500,
+        },
+        {
+          make: 'Vauxhall',
+          model: 'Astra SRi Nav',
+          year: 2019,
+          retailValue: 16250,
+          tradeValue: 14300,
+          privateValue: 15450,
+        },
+        {
+          make: 'Nissan',
+          model: 'Qashqai Tekna',
+          year: 2021,
+          retailValue: 25900,
+          tradeValue: 23200,
+          privateValue: 24650,
+        },
+        {
+          make: 'Honda',
+          model: 'Civic Type R',
+          year: 2020,
+          retailValue: 29950,
+          tradeValue: 27100,
+          privateValue: 28500,
+        },
+        {
+          make: 'Hyundai',
+          model: 'i30N Performance',
+          year: 2022,
+          retailValue: 27500,
+          tradeValue: 24750,
+          privateValue: 26100,
+        }
+      ];
+      
+      // Select vehicle based on registration to give different results
+      const vehicleIndex = regLastDigit % vehicles.length;
+      const vehicle = vehicles[vehicleIndex];
+      
+      resolve({
+        success: true,
+        data: {
+          registration: registration,
+          make: vehicle.make,
+          model: vehicle.model,
+          year: vehicle.year,
+          retailValue: vehicle.retailValue,
+          tradeValue: vehicle.tradeValue,
+          privateValue: vehicle.privateValue,
+          mileage: mileage || Math.floor(Math.random() * 35000) + 15000 // Random mileage between 15k-50k
         }
       });
     }, 1500);
   });
 };
+
