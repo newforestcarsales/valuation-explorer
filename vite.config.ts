@@ -22,9 +22,15 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     outDir: "dist",
+    // Make sure the manifest.json and icons are copied to the dist folder
+    copyPublicDir: true,
+    // Disable code splitting for extensions
     rollupOptions: {
       output: {
         manualChunks: undefined,
+        entryFileNames: 'assets/[name].js',
+        chunkFileNames: 'assets/[name].js',
+        assetFileNames: 'assets/[name].[ext]'
       },
     },
   },
