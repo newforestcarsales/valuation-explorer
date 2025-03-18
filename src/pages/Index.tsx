@@ -8,6 +8,7 @@ import ErrorMessage from '@/components/ErrorMessage';
 import { fetchVehicleValuation } from '@/services/vehicleApi';
 import { useSettingsStore } from '@/store/settingsStore';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
   const { apiKey, hasSetApiKey, setApiKey, addRecentSearch } = useSettingsStore();
@@ -15,6 +16,7 @@ const Index = () => {
   const [error, setError] = useState<string | null>(null);
   const [valuationData, setValuationData] = useState<any>(null);
   const [showContainer, setShowContainer] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     // Add small delay to show container with animation
@@ -35,7 +37,7 @@ const Index = () => {
     setValuationData(null);
 
     try {
-      // Use real API instead of simulation
+      // Use real API with fallback to simulation if needed
       const result = await fetchVehicleValuation({
         registration,
         mileage,
@@ -45,11 +47,26 @@ const Index = () => {
       if (result.success && result.data) {
         setValuationData(result.data);
         addRecentSearch(registration);
+        toast({
+          title: "Valuation complete",
+          description: `Found valuation for ${result.data.make} ${result.data.model}`,
+        });
       } else {
         setError(result.error || 'Failed to fetch vehicle data.');
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: result.error || "Failed to fetch vehicle data",
+        });
       }
     } catch (err) {
-      setError('An unexpected error occurred. Please try again.');
+      const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred. Please try again.';
+      setError(errorMessage);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: errorMessage,
+      });
       console.error('Search error:', err);
     } finally {
       setLoading(false);
