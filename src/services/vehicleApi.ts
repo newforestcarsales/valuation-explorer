@@ -1,4 +1,3 @@
-
 // This is a service to interact with the Vehicle Search API
 
 interface VehicleValuationRequest {
@@ -43,15 +42,11 @@ export const fetchVehicleValuation = async ({
       }
     });
     
-    const data = await response.json();
-    
     if (!response.ok) {
-      console.error('API error response:', data);
-      return {
-        success: false,
-        error: data.message || `Error ${response.status}: Failed to fetch vehicle data`
-      };
+      throw new Error(`API returned status ${response.status}`);
     }
+    
+    const data = await response.json();
     
     console.log('Vehicle data received:', data);
     
@@ -71,9 +66,11 @@ export const fetchVehicleValuation = async ({
   } catch (error) {
     console.error('API error:', error);
     
-    // If we get a network error (likely CORS-related), fall back to simulation
-    console.log('Falling back to simulation due to network error');
-    return simulateVehicleValuation(registration, mileage);
+    // Return a proper error instead of falling back to simulation
+    return {
+      success: false,
+      error: 'Unable to connect to the vehicle valuation service. This might be because the preview environment does not support external API calls. Please try the extension in a real Chrome browser.'
+    };
   }
 };
 
