@@ -6,7 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { formatRegistration, isValidUKRegistration } from '@/lib/utils';
 import { useSettingsStore } from '@/store/settingsStore';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Settings, Search, XCircle } from 'lucide-react';
+import { Settings as SettingsIcon, Search, XCircle } from 'lucide-react';
+import SettingsDialog from '@/components/Settings';
 
 interface SearchFormProps {
   onSearch: (registration: string, mileage?: number) => void;
@@ -47,7 +48,7 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch, loading }) => {
             onClick={() => setSettingsOpen(true)}
             className="h-8 w-8"
           >
-            <Settings className="h-4 w-4" />
+            <SettingsIcon className="h-4 w-4" />
           </Button>
         </div>
         
@@ -150,7 +151,7 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch, loading }) => {
         </AnimatePresence>
       </div>
       
-      <Settings 
+      <SettingsDialog 
         open={settingsOpen}
         onOpenChange={setSettingsOpen}
       />

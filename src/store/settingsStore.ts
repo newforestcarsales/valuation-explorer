@@ -1,6 +1,20 @@
 
 import { useState, useEffect } from 'react';
 
+// Add Chrome extension types
+declare global {
+  interface Window {
+    chrome?: {
+      storage?: {
+        local: {
+          get: (keys: string[], callback: (result: any) => void) => void;
+          set: (items: object) => Promise<void>;
+        };
+      };
+    };
+  }
+}
+
 interface SettingsStore {
   apiKey: string;
   hasSetApiKey: boolean;
@@ -15,13 +29,17 @@ export const useSettingsStore = (): SettingsStore => {
   const [hasSetApiKey, setHasSetApiKey] = useState<boolean>(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
 
+  // Check if running in Chrome extension context
+  const isChromeExtension = typeof window !== 'undefined' && 
+                            window.chrome !== undefined && 
+                            window.chrome.storage !== undefined;
+
   // Load initial state from Chrome storage
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        // Use localStorage for development and Chrome storage in extension
-        if (typeof chrome !== 'undefined' && chrome.storage) {
-          chrome.storage.local.get(['apiKey', 'recentSearches'], (result) => {
+        if (isChromeExtension) {
+          window.chrome?.storage?.local.get(['apiKey', 'recentSearches'], (result) => {
             if (result.apiKey) {
               setApiKeyState(result.apiKey);
               setHasSetApiKey(true);
@@ -49,15 +67,15 @@ export const useSettingsStore = (): SettingsStore => {
     };
 
     loadSettings();
-  }, []);
+  }, [isChromeExtension]);
 
   const setApiKey = async (key: string): Promise<void> => {
     setApiKeyState(key);
     setHasSetApiKey(!!key);
     
     try {
-      if (typeof chrome !== 'undefined' && chrome.storage) {
-        await chrome.storage.local.set({ apiKey: key });
+      if (isChromeExtension) {
+        await window.chrome?.storage?.local.set({ apiKey: key });
       } else {
         localStorage.setItem('apiKey', key);
       }
@@ -76,8 +94,8 @@ export const useSettingsStore = (): SettingsStore => {
     setRecentSearches(updatedSearches);
     
     try {
-      if (typeof chrome !== 'undefined' && chrome.storage) {
-        await chrome.storage.local.set({ recentSearches: updatedSearches });
+      if (isChromeExtension) {
+        await window.chrome?.storage?.local.set({ recentSearches: updatedSearches });
       } else {
         localStorage.setItem('recentSearches', JSON.stringify(updatedSearches));
       }
@@ -90,8 +108,8 @@ export const useSettingsStore = (): SettingsStore => {
     setRecentSearches([]);
     
     try {
-      if (typeof chrome !== 'undefined' && chrome.storage) {
-        await chrome.storage.local.set({ recentSearches: [] });
+      if (isChromeExtension) {
+        await window.chrome?.storage?.local.set({ recentSearches: [] });
       } else {
         localStorage.setItem('recentSearches', JSON.stringify([]));
       }
