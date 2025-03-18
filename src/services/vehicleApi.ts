@@ -30,14 +30,14 @@ export const fetchVehicleValuation = async ({
     // Format registration to remove spaces for API call
     const formattedReg = registration.replace(/\s+/g, '').toUpperCase();
     
-    // Configure API endpoint
+    // Configure API endpoint - using correct endpoint
     const url = new URL('https://api.vehicle-search.co.uk/api/v1/valuation');
     url.searchParams.append('registration', formattedReg);
     if (mileage) url.searchParams.append('mileage', mileage.toString());
     
     console.log(`Fetching vehicle data for ${formattedReg}...`);
     
-    // Make the API call
+    // Make the API call with proper headers
     const response = await fetch(url.toString(), {
       method: 'GET',
       headers: {
@@ -46,18 +46,19 @@ export const fetchVehicleValuation = async ({
       }
     });
     
+    // Handle non-200 responses
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       const errorMessage = errorData.message || `API returned status ${response.status}`;
       console.error('API error:', errorMessage);
-      
       throw new Error(errorMessage);
     }
     
+    // Parse successful response
     const data = await response.json();
-    
     console.log('Vehicle data received:', data);
     
+    // Return formatted response
     return {
       success: true,
       data: {
@@ -74,14 +75,10 @@ export const fetchVehicleValuation = async ({
   } catch (error) {
     console.error('API error:', error);
     
-    // Only fall back to simulation in development or when the extension explicitly needs it
-    if (process.env.NODE_ENV === 'development' || 
-        (typeof window !== 'undefined' && window.chrome && 'storage' in window.chrome)) {
-      console.log('Falling back to simulation - for demo purposes only');
-      return simulateVehicleValuation(registration, mileage);
-    }
+    // No condition for falling back to simulation in production
+    // We always want to use the real API
     
-    // In production, return a proper error
+    // Return proper error
     return {
       success: false,
       error: error instanceof Error 
@@ -91,8 +88,9 @@ export const fetchVehicleValuation = async ({
   }
 };
 
-// For demonstration purposes, this function simulates an API response
-export const simulateVehicleValuation = (
+// Note: This simulation function is kept for reference but we no longer use it
+// in the main flow unless explicitly called
+const simulateVehicleValuation = (
   registration: string,
   mileage?: number
 ): Promise<VehicleValuationResponse> => {
